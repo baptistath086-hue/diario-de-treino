@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Diário de Treino</title>
+<style>
+:root{
+  --bg:#F6F3EC; --panel:#FFFFFF; --ink:#1B1F23; --sub:#5B6570;
+  --line:#DCD6C8; --accent:#5C7A52; --accent-ink:#FFFFFF;
+  --warn:#B5533C; --chip:#EFEADC;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B1F23; --panel:#22272C; --ink:#F0EDE4; --sub:#9AA3AA;
+    --line:#3A4147; --accent:#8FB27E; --accent-ink:#142010; --chip:#2B3238;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B1F23; --panel:#22272C; --ink:#F0EDE4; --sub:#9AA3AA;
+  --line:#3A4147; --accent:#8FB27E; --accent-ink:#142010; --chip:#2B3238;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  min-height:100%;
+}
+h1,h2,.num{font-family:"Georgia","Iowan Old Style",serif}
+header{
+  padding:1.4rem 1.2rem .8rem; padding-top:calc(1.4rem + env(safe-area-inset-top,0px));
+  border-bottom:1px solid var(--line);
+}
+header h1{margin:0 0 .15rem; font-size:1.5rem; font-weight:600}
+header p{margin:0; color:var(--sub); font-size:.85rem}
+nav{
+  display:flex; flex-wrap:wrap; gap:0; border-bottom:1px solid var(--line);
+  background:var(--panel);
+}
+nav button{
+  flex:1 1 auto; padding:.8rem .6rem; background:none; border:none; color:var(--sub);
+  font-size:.85rem; font-family:inherit; cursor:pointer; border-bottom:2px solid transparent;
+  white-space:nowrap; touch-action:manipulation; min-height:44px;
+}
+nav button.active{color:var(--accent); border-bottom-color:var(--accent); font-weight:600}
+main{max-width:760px; margin:0 auto; padding:1.2rem; padding-bottom:3rem}
+section{display:none}
+section.active{display:block}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:6px;
+  padding:1rem; margin-bottom:1rem;
+}
+.card h2{font-size:1.05rem; margin:0 0 .8rem; font-weight:600}
+.row{display:flex; flex-wrap:wrap; gap:.6rem; margin-bottom:.6rem}
+.field{flex:1 1 130px; display:flex; flex-direction:column; gap:.25rem}
+.field label{font-size:.72rem; color:var(--sub)}
+input,select{
+  font-family:inherit; font-size:.9rem; padding:.5rem .55rem; border:1px solid var(--line);
+  border-radius:4px; background:var(--bg); color:var(--ink); width:100%;
+}
+button.primary{
+  background:var(--accent); color:var(--accent-ink); border:none; border-radius:4px;
+  padding:.55rem 1.1rem; font-size:.88rem; font-weight:600; cursor:pointer; font-family:inherit;
+}
+button.ghost{
+  background:none; border:1px solid var(--line); color:var(--sub); border-radius:4px;
+  padding:.3rem .6rem; font-size:.75rem; cursor:pointer; font-family:inherit;
+}
+table{width:100%; border-collapse:collapse; font-size:.85rem; margin-top:.4rem}
+th{text-align:left; color:var(--sub); font-weight:500; font-size:.72rem; padding:.3rem .4rem; border-bottom:1px solid var(--line)}
+td{padding:.4rem; border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+.empty{color:var(--sub); font-size:.85rem; padding:.6rem 0}
+.stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.8rem}
+.stat{background:var(--chip); border-radius:6px; padding:.8rem}
+.stat .num{font-size:1.5rem; line-height:1}
+.stat .lbl{font-size:.72rem; color:var(--sub); margin-top:.2rem}
+.overflow{overflow-x:auto}
+svg text{font-family:"Inter",sans-serif}
+.hint{font-size:.75rem; color:var(--sub); margin-top:.3rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Diário de Treino e Evolução</h1>
+  <p>Seus dados ficam salvos só neste navegador.</p>
+</header>
+<nav id="tabs">
+  <button data-t="treino" class="active">Treino</button>
+  <button data-t="cargas">Cargas</button>
+  <button data-t="medidas">Medidas</button>
+  <button data-t="habitos">Hábitos</button>
+  <button data-t="resumo">Resumo</button>
+</nav>
+<main>
+
+<section id="treino" class="active">
+  <div class="card">
+    <h2>Novo item de treino</h2>
+    <div class="row">
+      <div class="field"><label>Dia</label>
+        <select id="tr-dia"><option>Segunda</option><option>Terça</option><option>Quarta</option><option>Quinta</option><option>Sexta</option><option>Sábado</option><option>Domingo</option></select></div>
+      <div class="field"><label>Exercício</label><input id="tr-ex" placeholder="Agachamento"></div>
+      <div class="field"><label>Séries</label><input id="tr-s" type="number" placeholder="3"></div>
+      <div class="field"><label>Repetições</label><input id="tr-r" type="number" placeholder="12"></div>
+      <div class="field"><label>Carga (kg)</label><input id="tr-c" type="number" placeholder="20"></div>
+    </div>
+    <button class="primary" id="btn-add-treino" type="button">Adicionar</button>
+  </div>
+  <div class="card">
+    <h2>Semana atual</h2>
+    <div id="treino-list"></div>
+  </div>
+</section>
+
+<section id="cargas">
+  <div class="card">
+    <h2>Registrar série</h2>
+    <div class="row">
+      <div class="field"><label>Data</label><input id="ca-data" type="date"></div>
+      <div class="field"><label>Exercício</label><input id="ca-ex" placeholder="Agachamento"></div>
+      <div class="field"><label>Repetições</label><input id="ca-r" type="number" placeholder="12"></div>
+      <div class="field"><label>Carga (kg)</label><input id="ca-c" type="number" placeholder="20"></div>
+    </div>
+    <button class="primary" id="btn-add-carga" type="button">Adicionar</button>
+  </div>
+  <div class="card">
+    <h2>Histórico</h2>
+    <div id="carga-list"></div>
+  </div>
+</section>
+
+<section id="medidas">
+  <div class="card">
+    <h2>Novo registro</h2>
+    <div class="row">
+      <div class="field"><label>Data</label><input id="me-data" type="date"></div>
+      <div class="field"><label>Peso (kg)</label><input id="me-p" type="number" step="0.1" placeholder="70"></div>
+      <div class="field"><label>Cintura (cm)</label><input id="me-ci" type="number" step="0.1" placeholder="80"></div>
+    </div>
+    <button class="primary" id="btn-add-medida" type="button">Adicionar</button>
+  </div>
+  <div class="card">
+    <h2>Evolução do peso</h2>
+    <div id="chart-wrap"></div>
+    <div id="medida-list"></div>
+  </div>
+</section>
+
+<section id="habitos">
+  <div class="card">
+    <h2>Hoje</h2>
+    <div class="row">
+      <div class="field"><label>Data</label><input id="ha-data" type="date"></div>
+      <div class="field"><label>Água (L)</label><input id="ha-agua" type="number" step="0.1" placeholder="2"></div>
+      <div class="field"><label>Sono (h)</label><input id="ha-sono" type="number" step="0.1" placeholder="7.5"></div>
+      <div class="field"><label>Treinou?</label><select id="ha-tr"><option>Sim</option><option>Não</option></select></div>
+      <div class="field"><label>Energia (1-5)</label><input id="ha-en" type="number" min="1" max="5" placeholder="4"></div>
+    </div>
+    <button class="primary" id="btn-add-habito" type="button">Adicionar</button>
+  </div>
+  <div class="card">
+    <h2>Histórico</h2>
+    <div id="habito-list"></div>
+  </div>
+</section>
+
+<section id="resumo">
+  <div class="card">
+    <h2>Mês analisado</h2>
+    <div class="row">
+      <div class="field" style="max-width:200px"><label>Escolha o mês</label><input id="re-mes" type="month"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Resultados do mês</h2>
+    <div id="resumo-stats" class="stat-grid"></div>
+  </div>
+  <div class="card">
+    <h2>Dados</h2>
+    <button class="ghost" id="btn-reset" type="button">Apagar todos os dados deste navegador</button>
+  </div>
+</section>
+
+</main>
+
+<script>
+const KEY='diario_treino_v1';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{treino:[],cargas:[],medidas:[],habitos:[]}; }catch(e){ return {treino:[],cargas:[],medidas:[],habitos:[]}; } }
+function save(d){ try{ localStorage.setItem(KEY, JSON.stringify(d)); }catch(e){} }
+let data = load();
+
+document.getElementById('tabs').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(e.target.dataset.t).classList.add('active');
+  if(e.target.dataset.t==='resumo') renderResumo();
+});
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+['ca-data','me-data','ha-data'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.value=todayStr();
+});
+document.getElementById('re-mes').value = todayStr().slice(0,7);
+
+function addTreino(){
+  const dia=document.getElementById('tr-dia').value;
+  const ex=document.getElementById('tr-ex').value.trim();
+  const s=document.getElementById('tr-s').value;
+  const r=document.getElementById('tr-r').value;
+  const c=document.getElementById('tr-c').value;
+  if(!ex){ alert('Escreva o nome do exercício.'); return; }
+  data.treino.push({dia,ex,s,r,c});
+  save(data); document.getElementById('tr-ex').value=''; renderTreino();
+}
+function renderTreino(){
+  const box=document.getElementById('treino-list');
+  if(!data.treino.length){ box.innerHTML='<div class="empty">Nenhum exercício ainda. Adicione o primeiro acima.</div>'; return; }
+  let h='<div class="overflow"><table><tr><th>Dia</th><th>Exercício</th><th>Séries</th><th>Reps</th><th>Carga</th><th></th></tr>';
+  data.treino.forEach((t,i)=>{
+    h+=`<tr><td>${t.dia}</td><td>${t.ex}</td><td>${t.s||'-'}</td><td>${t.r||'-'}</td><td>${t.c||'-'} kg</td><td><button class="ghost" data-del="treino,${i}">Remover</button></td></tr>`;
+  });
+  box.innerHTML=h+'</table></div>';
+}
+
+function addCarga(){
+  const dt=document.getElementById('ca-data').value||todayStr();
+  const ex=document.getElementById('ca-ex').value.trim();
+  const r=parseFloat(document.getElementById('ca-r').value);
+  const c=parseFloat(document.getElementById('ca-c').value);
+  if(!ex||!r||!c){ alert('Preencha exercício, repetições e carga.'); return; }
+  data.cargas.push({dt,ex,r,c,vol:r*c});
+  save(data); document.getElementById('ca-ex').value=''; document.getElementById('ca-r').value=''; document.getElementById('ca-c').value='';
+  renderCargas();
+}
+function renderCargas(){
+  const box=document.getElementById('carga-list');
+  const list=[...data.cargas].sort((a,b)=>b.dt.localeCompare(a.dt));
+  if(!list.length){ box.innerHTML='<div class="empty">Nenhuma série registrada ainda.</div>'; return; }
+  let h='<div class="overflow"><table><tr><th>Data</th><th>Exercício</th><th>Reps</th><th>Carga</th><th>Volume</th><th></th></tr>';
+  list.forEach((t)=>{
+    const i=data.cargas.indexOf(t);
+    h+=`<tr><td>${fmtDate(t.dt)}</td><td>${t.ex}</td><td>${t.r}</td><td>${t.c} kg</td><td>${t.vol} kg</td><td><button class="ghost" data-del="cargas,${i}">Remover</button></td></tr>`;
+  });
+  box.innerHTML=h+'</table></div>';
+}
+
+function addMedida(){
+  const dt=document.getElementById('me-data').value||todayStr();
+  const p=parseFloat(document.getElementById('me-p').value);
+  const ci=parseFloat(document.getElementById('me-ci').value);
+  if(!p){ alert('Informe o peso.'); return; }
+  data.medidas.push({dt,p,ci});
+  data.medidas.sort((a,b)=>a.dt.localeCompare(b.dt));
+  save(data); document.getElementById('me-p').value=''; document.getElementById('me-ci').value='';
+  renderMedidas();
+}
+function renderMedidas(){
+  drawChart();
+  const box=document.getElementById('medida-list');
+  const list=[...data.medidas].sort((a,b)=>b.dt.localeCompare(a.dt));
+  if(!list.length){ box.innerHTML='<div class="empty">Nenhum registro ainda.</div>'; return; }
+  let h='<div class="overflow"><table><tr><th>Data</th><th>Peso</th><th>Cintura</th><th></th></tr>';
+  list.forEach((t)=>{
+    const i=data.medidas.indexOf(t);
+    h+=`<tr><td>${fmtDate(t.dt)}</td><td>${t.p} kg</td><td>${t.ci||'-'} cm</td><td><button class="ghost" data-del="medidas,${i}">Remover</button></td></tr>`;
+  });
+  box.innerHTML=h+'</table></div>';
+}
+function drawChart(){
+  const wrap=document.getElementById('chart-wrap');
+  const pts=[...data.medidas].sort((a,b)=>a.dt.localeCompare(b.dt));
+  if(pts.length<2){ wrap.innerHTML='<div class="hint">Adicione ao menos 2 registros para ver o gráfico.</div>'; return; }
+  const W=640,H=160,pad=28;
+  const ws=pts.map(p=>p.p);
+  const min=Math.min(...ws), max=Math.max(...ws);
+  const span=(max-min)||1;
+  const x=i=> pad + i*(W-2*pad)/(pts.length-1);
+  const y=v=> H-pad - (v-min)/span*(H-2*pad);
+  const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)},${y(p.p).toFixed(1)}`).join(' ');
+  const ink=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#5C7A52';
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none">`;
+  svg+=`<path d="${line}" fill="none" stroke="${ink}" stroke-width="2.5"/>`;
+  pts.forEach((p,i)=>{ svg+=`<circle cx="${x(i).toFixed(1)}" cy="${y(p.p).toFixed(1)}" r="3" fill="${ink}"/>`; });
+  svg+=`<text x="${pad}" y="14" font-size="11" fill="var(--sub)">${max} kg</text>`;
+  svg+=`<text x="${pad}" y="${H-14}" font-size="11" fill="var(--sub)">${min} kg</text>`;
+  svg+='</svg>';
+  wrap.innerHTML=svg;
+}
+
+function addHabito(){
+  const dt=document.getElementById('ha-data').value||todayStr();
+  const agua=parseFloat(document.getElementById('ha-agua').value)||0;
+  const sono=parseFloat(document.getElementById('ha-sono').value)||0;
+  const tr=document.getElementById('ha-tr').value;
+  const en=parseInt(document.getElementById('ha-en').value)||null;
+  data.habitos.push({dt,agua,sono,tr,en});
+  save(data); renderHabitos();
+}
+function renderHabitos(){
+  const box=document.getElementById('habito-list');
+  const list=[...data.habitos].sort((a,b)=>b.dt.localeCompare(a.dt));
+  if(!list.length){ box.innerHTML='<div class="empty">Nenhum dia registrado ainda.</div>'; return; }
+  let h='<div class="overflow"><table><tr><th>Data</th><th>Água</th><th>Sono</th><th>Treinou</th><th>Energia</th><th></th></tr>';
+  list.forEach((t)=>{
+    const i=data.habitos.indexOf(t);
+    h+=`<tr><td>${fmtDate(t.dt)}</td><td>${t.agua} L</td><td>${t.sono} h</td><td>${t.tr}</td><td>${t.en||'-'}</td><td><button class="ghost" data-del="habitos,${i}">Remover</button></td></tr>`;
+  });
+  box.innerHTML=h+'</table></div>';
+}
+
+function delItem(cat,i){ data[cat].splice(i,1); save(data);
+  if(cat==='treino')renderTreino(); if(cat==='cargas')renderCargas();
+  if(cat==='medidas')renderMedidas(); if(cat==='habitos')renderHabitos();
+}
+function fmtDate(s){ const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+
+document.getElementById('re-mes').addEventListener('change', renderResumo);
+function renderResumo(){
+  const ym=document.getElementById('re-mes').value;
+  const box=document.getElementById('resumo-stats');
+  if(!ym){ box.innerHTML=''; return; }
+  const hab=data.habitos.filter(h=>h.dt.startsWith(ym));
+  const car=data.cargas.filter(c=>c.dt.startsWith(ym));
+  const med=[...data.medidas].sort((a,b)=>a.dt.localeCompare(b.dt));
+  const dias=hab.length;
+  const treinos=hab.filter(h=>h.tr==='Sim').length;
+  const aguaMed = dias? (hab.reduce((s,h)=>s+h.agua,0)/dias).toFixed(1):'-';
+  const sonoMed = dias? (hab.reduce((s,h)=>s+h.sono,0)/dias).toFixed(1):'-';
+  const vol = car.reduce((s,c)=>s+c.vol,0);
+  const pesoIni = med.length? med[0].p : null;
+  const pesoAtual = med.length? med[med.length-1].p : null;
+  const varPeso = (pesoIni!==null && pesoAtual!==null) ? (pesoAtual-pesoIni).toFixed(1) : null;
+  const stats=[
+    ['Dias registrados', dias],
+    ['Treinos feitos', treinos],
+    ['Água média/dia', aguaMed+' L'],
+    ['Sono médio/noite', sonoMed+' h'],
+    ['Volume levantado no mês', vol+' kg'],
+    ['Peso atual', pesoAtual!==null? pesoAtual+' kg':'-'],
+    ['Variação de peso (total)', varPeso!==null? (varPeso>0?'+':'')+varPeso+' kg':'-'],
+  ];
+  box.innerHTML = stats.map(s=>`<div class="stat"><div class="num">${s[1]}</div><div class="lbl">${s[0]}</div></div>`).join('');
+}
+
+function resetAll(){
+  if(confirm('Isso vai apagar todos os dados salvos neste navegador. Confirmar?')){
+    data={treino:[],cargas:[],medidas:[],habitos:[]}; save(data);
+    renderTreino(); renderCargas(); renderMedidas(); renderHabitos(); renderResumo();
+  }
+}
+
+document.getElementById('btn-add-treino').addEventListener('click', addTreino);
+document.getElementById('btn-add-carga').addEventListener('click', addCarga);
+document.getElementById('btn-add-medida').addEventListener('click', addMedida);
+document.getElementById('btn-add-habito').addEventListener('click', addHabito);
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+document.querySelector('main').addEventListener('click', function(e){
+  var b = e.target.closest('[data-del]');
+  if(!b) return;
+  var parts = b.getAttribute('data-del').split(',');
+  delItem(parts[0], parseInt(parts[1]));
+});
+
+renderTreino(); renderCargas(); renderMedidas(); renderHabitos(); renderResumo();
+</script>
+</body>
+</html>
