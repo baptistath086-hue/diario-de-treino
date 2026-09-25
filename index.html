@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -140,6 +141,14 @@ svg text{font-family:"Inter",sans-serif}
       <div class="field"><label>Data</label><input id="me-data" type="date"></div>
       <div class="field"><label>Peso (kg)</label><input id="me-p" type="number" step="0.1" placeholder="70"></div>
       <div class="field"><label>Cintura (cm)</label><input id="me-ci" type="number" step="0.1" placeholder="80"></div>
+      <div class="field"><label>Peito/Tórax (cm)</label><input id="me-peito" type="number" step="0.1" placeholder="100"></div>
+      <div class="field"><label>Quadril (cm)</label><input id="me-quad" type="number" step="0.1" placeholder="100"></div>
+      <div class="field"><label>Braço direito (cm)</label><input id="me-bd" type="number" step="0.1" placeholder="35"></div>
+      <div class="field"><label>Braço esquerdo (cm)</label><input id="me-be" type="number" step="0.1" placeholder="35"></div>
+      <div class="field"><label>Coxa direita (cm)</label><input id="me-cd" type="number" step="0.1" placeholder="55"></div>
+      <div class="field"><label>Coxa esquerda (cm)</label><input id="me-ce" type="number" step="0.1" placeholder="55"></div>
+      <div class="field"><label>Panturrilha direita (cm)</label><input id="me-pd" type="number" step="0.1" placeholder="38"></div>
+      <div class="field"><label>Panturrilha esquerda (cm)</label><input id="me-pe" type="number" step="0.1" placeholder="38"></div>
     </div>
     <button class="primary" id="btn-add-medida" type="button">Adicionar</button>
   </div>
@@ -254,10 +263,19 @@ function addMedida(){
   const dt=document.getElementById('me-data').value||todayStr();
   const p=parseFloat(document.getElementById('me-p').value);
   const ci=parseFloat(document.getElementById('me-ci').value);
+  const peito=parseFloat(document.getElementById('me-peito').value)||null;
+  const quad=parseFloat(document.getElementById('me-quad').value)||null;
+  const bd=parseFloat(document.getElementById('me-bd').value)||null;
+  const be=parseFloat(document.getElementById('me-be').value)||null;
+  const cd=parseFloat(document.getElementById('me-cd').value)||null;
+  const ce=parseFloat(document.getElementById('me-ce').value)||null;
+  const pd=parseFloat(document.getElementById('me-pd').value)||null;
+  const pe=parseFloat(document.getElementById('me-pe').value)||null;
   if(!p){ alert('Informe o peso.'); return; }
-  data.medidas.push({dt,p,ci});
+  data.medidas.push({dt,p,ci,peito,quad,bd,be,cd,ce,pd,pe});
   data.medidas.sort((a,b)=>a.dt.localeCompare(b.dt));
-  save(data); document.getElementById('me-p').value=''; document.getElementById('me-ci').value='';
+  save(data);
+  ['me-p','me-ci','me-peito','me-quad','me-bd','me-be','me-cd','me-ce','me-pd','me-pe'].forEach(id=>document.getElementById(id).value='');
   renderMedidas();
 }
 function renderMedidas(){
@@ -265,10 +283,10 @@ function renderMedidas(){
   const box=document.getElementById('medida-list');
   const list=[...data.medidas].sort((a,b)=>b.dt.localeCompare(a.dt));
   if(!list.length){ box.innerHTML='<div class="empty">Nenhum registro ainda.</div>'; return; }
-  let h='<div class="overflow"><table><tr><th>Data</th><th>Peso</th><th>Cintura</th><th></th></tr>';
+  let h='<div class="overflow"><table><tr><th>Data</th><th>Peso</th><th>Cintura</th><th>Peito</th><th>Quadril</th><th>Braço D</th><th>Braço E</th><th>Coxa D</th><th>Coxa E</th><th>Pant. D</th><th>Pant. E</th><th></th></tr>';
   list.forEach((t)=>{
     const i=data.medidas.indexOf(t);
-    h+=`<tr><td>${fmtDate(t.dt)}</td><td>${t.p} kg</td><td>${t.ci||'-'} cm</td><td><button class="ghost" data-del="medidas,${i}">Remover</button></td></tr>`;
+    h+=`<tr><td>${fmtDate(t.dt)}</td><td>${t.p} kg</td><td>${t.ci||'-'} cm</td><td>${t.peito||'-'} cm</td><td>${t.quad||'-'} cm</td><td>${t.bd||'-'} cm</td><td>${t.be||'-'} cm</td><td>${t.cd||'-'} cm</td><td>${t.ce||'-'} cm</td><td>${t.pd||'-'} cm</td><td>${t.pe||'-'} cm</td><td><button class="ghost" data-del="medidas,${i}">Remover</button></td></tr>`;
   });
   box.innerHTML=h+'</table></div>';
 }
